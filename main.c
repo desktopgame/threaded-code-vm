@@ -16,7 +16,77 @@ typedef enum opcode_t
 
 typedef void *jump_addr_t;
 
-static void vm_exec(opcode_t *program)
+static void vm_exec_switch(opcode_t *program)
+{
+	bnStack *stack = bnNewStack();
+	int PC = 0;
+	bool vmrun = true;
+	while (vmrun)
+	{
+		opcode_t code = program[PC];
+		switch (code)
+		{
+		case op_lit:
+		{
+			printf("LIT\n");
+			bnPushStack(stack, (void *)program[++PC]);
+			break;
+		}
+		case op_add:
+		{
+			printf("ADD\n");
+			int a = (int)bnPopStack(stack);
+			int b = (int)bnPopStack(stack);
+			bnPushStack(stack, (void *)(a + b));
+			break;
+		}
+		case op_sub:
+		{
+
+			printf("SUB\n");
+			int a = (int)bnPopStack(stack);
+			int b = (int)bnPopStack(stack);
+			bnPushStack(stack, (void *)(a - b));
+			break;
+		}
+		case op_mul:
+		{
+			printf("MUL\n");
+			int a = (int)bnPopStack(stack);
+			int b = (int)bnPopStack(stack);
+			bnPushStack(stack, (void *)(a * b));
+			break;
+		}
+		case op_div:
+		{
+			printf("DIV\n");
+			int a = (int)bnPopStack(stack);
+			int b = (int)bnPopStack(stack);
+			bnPushStack(stack, (void *)(a / b));
+			break;
+		}
+		case op_mod:
+		{
+			printf("MOD\n");
+			int a = (int)bnPopStack(stack);
+			int b = (int)bnPopStack(stack);
+			bnPushStack(stack, (void *)(a % b));
+			break;
+		}
+		case op_disp:
+		{
+
+			printf("DISP\n");
+			printf("value: %d\n", (int)bnPopStack(stack));
+			vmrun = false;
+		}
+		}
+		PC++;
+	}
+	bnDeleteStack(stack, NULL);
+}
+
+static void vm_exec_tc(opcode_t *program)
 {
 	static jump_addr_t table[] = {
 		&&LABEL_LIT,
@@ -91,8 +161,12 @@ int main(int argc, char *argv[])
 		10,
 		op_lit,
 		5,
+		op_lit,
+		2,
 		op_add,
+		op_mul,
 		op_disp};
-	vm_exec(program);
+	vm_exec_switch(program);
+	vm_exec_tc(program);
 	return 0;
 }
